@@ -351,13 +351,15 @@ void GateMatePacker::pack_pll()
 
         NetInfo *clk = ci.getPort(id_CLK_REF);
         if (clk) {
-            if (ctx->getBelBucketForCellType(clk->driver.cell->type) == id_CC_BUFG) {
-                clk = clk->driver.cell->getPort(id_I);
-            }
-            if (ctx->getBelBucketForCellType(clk->driver.cell->type) == id_GPIO) {
-                auto pad_info = uarch->bel_to_pad[clk->driver.cell->bel];
-                if (pad_info->flags != 0) {
-                    die = uarch->tile_extra_data(clk->driver.cell->bel.tile)->die;
+            if (clk->driver.cell) {
+                if (ctx->getBelBucketForCellType(clk->driver.cell->type) == id_CC_BUFG) {
+                    clk = clk->driver.cell->getPort(id_I);
+                }
+                if (ctx->getBelBucketForCellType(clk->driver.cell->type) == id_GPIO) {
+                    auto pad_info = uarch->bel_to_pad[clk->driver.cell->bel];
+                    if (pad_info->flags != 0) {
+                        die = uarch->tile_extra_data(clk->driver.cell->bel.tile)->die;
+                    }
                 }
             }
         }
@@ -381,26 +383,39 @@ void GateMatePacker::pack_pll()
 
         clk = ci.getPort(id_CLK_REF);
         delay_t period = ctx->getDelayFromNS(1.0e9 / ctx->setting<float>("target_freq"));
+
         if (clk) {
-            if (ctx->getBelBucketForCellType(clk->driver.cell->type) == id_CC_BUFG) {
-                NetInfo *in = clk->driver.cell->getPort(id_I);
-                ci.disconnectPort(id_CLK_REF);
-                ci.connectPort(id_CLK_REF, in);
-                clk = in;
+            if (clk->driver.cell) {
+                if (ctx->getBelBucketForCellType(clk->driver.cell->type) == id_CC_BUFG) {
+                    NetInfo *in = clk->driver.cell->getPort(id_I);
+                    ci.disconnectPort(id_CLK_REF);
+                    ci.connectPort(id_CLK_REF, in);
+                    clk = in;
+                }
+                if (ctx->getBelBucketForCellType(clk->driver.cell->type) != id_GPIO)
+                    log_error("CLK_REF must be driven with GPIO pin.\n");
+
+                auto pad_info = uarch->bel_to_pad[clk->driver.cell->bel];
+                if (pad_info->flags == 0)
+                    log_error("CLK_REF must be driven with CLK dedicated pin.\n");
+                if (clk->clkconstr)
+                    period = clk->clkconstr->period.minDelay();
+
+                ci.movePortTo(id_CLK_REF, clkin[die], ctx->idf("CLK%d", pad_info->flags - 1));
+
+                NetInfo *conn = ctx->createNet(ctx->idf("%s_CLK_REF", ci.name.c_str(ctx)));
+                clkin[die]->connectPort(ctx->idf("CLK_REF%d", pll_index[die]), conn);
+                ci.connectPort(id_CLK_REF, conn);
             }
-            if (ctx->getBelBucketForCellType(clk->driver.cell->type) != id_GPIO)
-                log_error("CLK_REF must be driven with GPIO pin.\n");
-            auto pad_info = uarch->bel_to_pad[clk->driver.cell->bel];
-            if (pad_info->flags == 0)
-                log_error("CLK_REF must be driven with CLK dedicated pin.\n");
-            if (clk->clkconstr)
-                period = clk->clkconstr->period.minDelay();
+            else {
+                // SER_CLK
+                if (clk->clkconstr)
+                    period = clk->clkconstr->period.minDelay();
 
-            ci.movePortTo(id_CLK_REF, clkin[die], ctx->idf("CLK%d", pad_info->flags - 1));
-
-            NetInfo *conn = ctx->createNet(ctx->idf("%s_CLK_REF", ci.name.c_str(ctx)));
-            clkin[die]->connectPort(ctx->idf("CLK_REF%d", pll_index[die]), conn);
-            ci.connectPort(id_CLK_REF, conn);
+                clkin[die]->params[ctx->idf("REF%d", pll_index[die])] = Property(0b100, 3);
+                clkin[die]->params[ctx->idf("REF%d_INV", pll_index[die])] = Property(Property::State::S0);
+                clkin[die]->connectPort(id_SER_CLK, clk);
+            }
         }
 
         clk = ci.getPort(id_USR_CLK_REF);
