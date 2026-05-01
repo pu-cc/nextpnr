@@ -736,7 +736,7 @@ int CommandHandler::exec()
 {
     try {
         if (!parseOptions())
-            return -1;
+            return 125;
 
         if (executeBeforeContext())
             return 0;
@@ -752,7 +752,7 @@ int CommandHandler::exec()
         return rc;
     } catch (log_execution_error_exception) {
         printFooter();
-        return -1;
+        return 125;
     }
 }
 

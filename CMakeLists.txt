@@ -108,13 +108,6 @@ endif()
 
 if (WASI)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lwasi-emulated-mman")
-    add_definitions(
-        -DBOOST_EXCEPTION_DISABLE
-        -DBOOST_NO_EXCEPTIONS
-    )
-    if (NOT Threads_FOUND)
-        add_definitions(-DBOOST_NO_CXX11_HDR_MUTEX)
-    endif()
 endif()
 
 if (STATIC_BUILD)
