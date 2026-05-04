@@ -513,6 +513,8 @@ struct Arch : BaseArch<ArchRanges>
     }
     BelId getBelByLocation(Loc loc) const override
     {
+        if (loc.x < 0 || loc.x >= chip_info->width || loc.y < 0 || loc.y >= chip_info->height)
+            return BelId();
         int tile = tile_by_xy(chip_info, loc.x, loc.y);
         auto &tile_data = chip_tile_info(chip_info, tile);
         for (size_t i = 0; i < tile_data.bels.size(); i++) {
