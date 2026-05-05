@@ -35,8 +35,7 @@ enum class Axis
     Y
 };
 
-template <typename T>
-struct RealPairTempl
+template <typename T> struct RealPairTempl
 {
     RealPairTempl() : x(0), y(0) {};
     RealPairTempl(T x, T y) : x(x), y(y) {};
@@ -62,8 +61,14 @@ struct RealPairTempl
     inline T &at(Axis axis) { return (axis == Axis::Y) ? y : x; }
     inline const T &at(Axis axis) const { return (axis == Axis::Y) ? y : x; }
 };
-template <typename T> inline RealPairTempl<T> operator+(RealPairTempl<T> a, RealPairTempl<T> b) { return RealPairTempl(a.x + b.x, a.y + b.y); }
-template <typename T> inline RealPairTempl<T> operator-(RealPairTempl<T> a, RealPairTempl<T> b) { return RealPairTempl(a.x - b.x, a.y - b.y); }
+template <typename T> inline RealPairTempl<T> operator+(RealPairTempl<T> a, RealPairTempl<T> b)
+{
+    return RealPairTempl(a.x + b.x, a.y + b.y);
+}
+template <typename T> inline RealPairTempl<T> operator-(RealPairTempl<T> a, RealPairTempl<T> b)
+{
+    return RealPairTempl(a.x - b.x, a.y - b.y);
+}
 
 using RealPair = RealPairTempl<float>;
 using DoublePair = RealPairTempl<double>;

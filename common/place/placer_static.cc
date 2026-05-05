@@ -653,6 +653,8 @@ class StaticPlacer
             g.conc_density.reset(width, height, 0);
         for (int idx = 0; idx < int(ccells.size()); idx++) {
             auto &mc = mcells.at(idx);
+            if (mc.is_fixed)
+                continue;
             auto &g = groups.at(mc.group);
             auto loc = mc.pos;
             auto size = mc.rect;
@@ -1110,6 +1112,8 @@ class StaticPlacer
             for (int c : macro.conc_cells) {
                 auto &cc = ccells.at(c);
                 auto &mc = mcells.at(c);
+                if (mc.is_fixed)
+                    continue;
                 auto last_pos = mc.pos;
                 mc.pos = mc.pos * (1 - alpha) + (pos + RealPair(cc.chunk_dx, cc.chunk_dy)) * alpha;
                 mc.ref_pos = mc.ref_pos * (1 - alpha) + (ref_pos + RealPair(cc.chunk_dx, cc.chunk_dy)) * alpha;
