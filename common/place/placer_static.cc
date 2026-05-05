@@ -1494,6 +1494,8 @@ class StaticPlacer
         prepare_density_bins();
         initialise();
         bool legalised_ip = false;
+        float best_overlap = 1.0;
+        int best_overlap_iter = 0;
         while (true) {
             step();
             for (auto &p : dens_penalty)
@@ -1519,7 +1521,11 @@ class StaticPlacer
                 float logic_overlap = 0;
                 for (int i = 0; i < cfg.logic_groups; i++)
                     logic_overlap = std::max(logic_overlap, groups.at(i).overlap);
-                if (logic_overlap < 0.1) {
+                if (logic_overlap < best_overlap) {
+                    best_overlap = logic_overlap;
+                    best_overlap_iter = iter;
+                }
+                if (logic_overlap < 0.1 || (logic_overlap < 0.2 && iter > (best_overlap_iter + 50))) {
                     legalise_step(false);
                     break;
                 }
