@@ -23,6 +23,7 @@
 #include "log.h"
 #include "nextpnr_assertions.h"
 #include "placer_heap.h"
+#include "placer_static.h"
 
 #define GEN_INIT_CONSTIDS
 #define HIMBAECHEL_CONSTIDS "uarch/gatemate/constids.inc"
@@ -1001,6 +1002,80 @@ void GateMateImpl::configurePlacerHeap(PlacerHeapCfg &cfg)
 {
     cfg.chainRipup = true;
     cfg.placeAllAtOnce = true;
+}
+
+void GateMateImpl::configurePlacerStatic(PlacerStaticCfg &cfg)
+{
+    cfg.glbBufTypes.insert(id_CLKIN);
+    cfg.glbBufTypes.insert(id_GLBOUT);
+    cfg.glbBufTypes.insert(id_PLL);
+    cfg.glbBufTypes.insert(id_USR_RSTN);
+    cfg.glbBufTypes.insert(id_CFG_CTRL);
+    cfg.glbBufTypes.insert(id_SERDES);
+
+    {
+        cfg.cell_groups.emplace_back();
+        auto &comb = cfg.cell_groups.back();
+        comb.name = ctx->id("COMB");
+        comb.bel_area[id_CPE_LT_U] = StaticRect(1.0f, 0.5f);
+        comb.bel_area[id_CPE_LT_L] = StaticRect(1.0f, 0.5f);
+
+        comb.bel_area[id_CPE_CPLINES] = StaticRect(0.0f, 0.0f);
+        comb.bel_area[id_CPE_COMP] = StaticRect(0.0f, 0.0f);
+        comb.bel_area[id_CPE_RAMIO_U] = StaticRect(0.0f, 0.0f);
+        comb.bel_area[id_CPE_RAMIO_L] = StaticRect(0.0f, 0.0f);
+
+        comb.cell_area[id_CPE_LT_U] = StaticRect(1.0f, 0.5f);
+        comb.cell_area[id_CPE_LT_L] = StaticRect(1.0f, 0.5f);
+        comb.cell_area[id_CPE_LT] = StaticRect(1.0f, 0.5f);
+        comb.cell_area[id_CPE_L2T4] = StaticRect(1.0f, 0.5f);
+        comb.cell_area[id_CPE_DUMMY] = StaticRect(1.0f, 0.5f);
+
+        comb.cell_area[id_CPE_CPLINES] = StaticRect(1.0f, 0.5f);
+        comb.cell_area[id_CPE_COMP] = StaticRect(1.0f, 0.5f);
+        comb.cell_area[id_CPE_RAMIO] = StaticRect(1.0f, 0.5f);
+        comb.cell_area[id_CPE_RAMI] = StaticRect(1.0f, 0.5f);
+        comb.cell_area[id_CPE_RAMO] = StaticRect(1.0f, 0.5f);
+
+        comb.zero_area_cells.insert(id_CPE_CPLINES);
+        comb.zero_area_cells.insert(id_CPE_COMP);
+        comb.zero_area_cells.insert(id_CPE_RAMIO);
+        comb.zero_area_cells.insert(id_CPE_RAMI);
+        comb.zero_area_cells.insert(id_CPE_RAMO);
+
+        comb.spacer_rect = StaticRect(1.0f, 0.5f);
+    }
+
+    {
+        cfg.cell_groups.emplace_back();
+        auto &ff = cfg.cell_groups.back();
+        ff.name = ctx->id("FF");
+
+        ff.bel_area[id_CPE_FF_U] = StaticRect(1.0f, 0.5f);
+        ff.bel_area[id_CPE_FF_L] = StaticRect(1.0f, 0.5f);
+
+        ff.cell_area[id_CPE_FF_U] = StaticRect(1.0f, 0.5f);
+        ff.cell_area[id_CPE_FF_L] = StaticRect(1.0f, 0.5f);
+        ff.cell_area[id_CPE_FF] = StaticRect(1.0f, 0.5f);
+        ff.cell_area[id_CPE_LATCH] = StaticRect(1.0f, 0.5f);
+
+        ff.spacer_rect = StaticRect(1.0f, 0.5f);
+    }
+
+    {
+        cfg.cell_groups.emplace_back();
+        auto &ram = cfg.cell_groups.back();
+        ram.name = ctx->id("RAM");
+
+        ram.bel_area[id_RAM] = StaticRect(1.0f, 2.0f);
+        ram.bel_area[id_RAM_HALF_L] = StaticRect(1.0f, 2.0f);
+
+        ram.cell_area[id_RAM] = StaticRect(1.0f, 2.0f);
+        ram.cell_area[id_RAM_HALF] = StaticRect(1.0f, 2.0f);
+        ram.cell_area[id_RAM_HALF_DUMMY] = StaticRect(1.0f, 2.0f);
+
+        ram.spacer_rect = StaticRect(1.0f, 2.0f);
+    }
 }
 
 int GateMateImpl::get_dff_config(CellInfo *dff) const
