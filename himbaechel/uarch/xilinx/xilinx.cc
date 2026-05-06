@@ -421,15 +421,15 @@ void XilinxImpl::configurePlacerStatic(PlacerStaticCfg &cfg)
             case 6:
                 return {StaticRect(1.0f, 0.125f)};
             case 5:
-                return {StaticRect(1.0f, 0.09f)};
+                return {StaticRect(1.0f, 0.125f)};
             case 4:
-                return {StaticRect(1.0f, 0.07f)};
+                return {StaticRect(1.0f, 0.1f)};
             case 3:
-                return {StaticRect(1.0f, 0.06f)};
+                return {StaticRect(1.0f, 0.08f)};
             case 2:
-                return {StaticRect(1.0f, 0.04f)};
+                return {StaticRect(1.0f, 0.06f)};
             case 1:
-                return {StaticRect(1.0f, 0.03f)};
+                return {StaticRect(1.0f, 0.04f)};
             default:
                 NPNR_ASSERT_FALSE("unhandled LUT input count");
             }
