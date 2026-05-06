@@ -660,8 +660,8 @@ class StaticPlacer
             height = bin_h;
         }
 
-        double x0 = pos.x, x1 = pos.x + width;
-        double y0 = pos.y, y1 = pos.y + height;
+        double x0 = pos.x - width / 2.f, x1 = pos.x + width / 2.f;
+        double y0 = pos.y - height / 2.f, y1 = pos.y + height / 2.f;
         for (int y = int(y0 / bin_h); y <= int(y1 / bin_h); y++) {
             for (int x = int(x0 / bin_w); x <= int(x1 / bin_w); x++) {
                 if (x < 0 || x >= m || y < 0 || y >= m)
