@@ -358,11 +358,15 @@ void XilinxImpl::configurePlacerStatic(PlacerStaticCfg &cfg)
     cfg.glbBufTypes.insert(id_BUFGCTRL);
     cfg.glbBufTypes.insert(id_BUFG_BUFG);
 
+    cfg.timing_c = 500;
+    cfg.timing_mx = 25;
+    cfg.timing_my = 50;
+
     {
         cfg.cell_groups.emplace_back();
         auto &comb = cfg.cell_groups.back();
         comb.name = ctx->id("COMB");
-        comb.bel_area[id_SLICE_LUTX] = StaticRect(1.0f, 0.125f);
+        comb.bel_area[id_SLICE_LUTX] = StaticRect(1.0f, 0.0625f);
         comb.bel_area[id_CARRY4] = StaticRect(0.0f, 0.0f);
         comb.bel_area[id_SELMUX2_1] = StaticRect(0.0f, 0.0f);
 
@@ -380,8 +384,9 @@ void XilinxImpl::configurePlacerStatic(PlacerStaticCfg &cfg)
         cfg.cell_groups.emplace_back();
         auto &comb = cfg.cell_groups.back();
         comb.name = ctx->id("FF");
-        comb.cell_area[id_SLICE_FFX] = StaticRect(1.0f, 0.125f);
-        comb.bel_area[id_SLICE_FFX] = StaticRect(1.0f, 0.125f);
+        // Assume one FF occupies 1.5 bels due to control set packing and slice input restrictions
+        comb.cell_area[id_SLICE_FFX] = StaticRect(1.0f, 0.0875f);
+        comb.bel_area[id_SLICE_FFX] = StaticRect(1.0f, 0.0625f);
         comb.spacer_rect = StaticRect(1.0f, 0.125f);
     }
 
