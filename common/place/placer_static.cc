@@ -118,6 +118,7 @@ struct PlacerMacro
     CellInfo *root;
     std::vector<int32_t> conc_cells;
     dict<ClusterGroupKey, std::vector<CellInfo *>> cells;
+    RealPair centroid;
 };
 
 struct PlacerBin
@@ -462,6 +463,8 @@ class StaticPlacer
         // Process clustered cells
         for (int i = 0; i < int(macros.size()); i++) {
             auto &m = macros.at(i);
+            float total_area = 0;
+            m.centroid = RealPair(0, 0);
             for (auto &kv : m.cells) {
                 const auto &g = cfg.cell_groups.at(kv.first.group);
                 // Only treat zero-area cells as zero-area; if this cluster also contains non-zero area cells
@@ -511,9 +514,14 @@ class StaticPlacer
                     cc.macro_idx = i;
                     cc.chunk_dx = kv.first.dx;
                     cc.chunk_dy = kv.first.dy;
+                    m.centroid.x += float(kv.first.dx) * cluster_size.area();
+                    m.centroid.y += float(kv.first.dy) * cluster_size.area();
+                    total_area += cluster_size.area();
                     m.conc_cells.push_back(idx);
                 }
             }
+            if (total_area > 0)
+                m.centroid /= total_area;
         }
     }
 
@@ -1115,8 +1123,9 @@ class StaticPlacer
                 if (mc.is_fixed)
                     continue;
                 auto last_pos = mc.pos;
-                mc.pos = mc.pos * (1 - alpha) + (pos + RealPair(cc.chunk_dx, cc.chunk_dy)) * alpha;
-                mc.ref_pos = mc.ref_pos * (1 - alpha) + (ref_pos + RealPair(cc.chunk_dx, cc.chunk_dy)) * alpha;
+                mc.pos = mc.pos * (1 - alpha) + (pos + RealPair(cc.chunk_dx, cc.chunk_dy) - macro.centroid) * alpha;
+                mc.ref_pos = mc.ref_pos * (1 - alpha) +
+                             (ref_pos + RealPair(cc.chunk_dx, cc.chunk_dy) - macro.centroid) * alpha;
                 dist += std::sqrt(std::pow(last_pos.x - mc.pos.x, 2) + std::pow(last_pos.y - mc.pos.y, 2));
             }
         }
