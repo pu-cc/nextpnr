@@ -80,7 +80,7 @@ struct MoveCell
 {
     StaticRect rect;
     // TODO: multiple contiguous vectors is probably faster than an array of structs, but also messier
-    RealPair pos, ref_pos, last_pos, last_ref_pos;
+    RealPair pos, ref_pos, last_pos, last_ref_pos, solver_pos;
     RealPair ref_wl_grad, wl_grad, last_wl_grad;
     RealPair ref_dens_grad, dens_grad, last_dens_grad;
     RealPair ref_total_grad, total_grad, last_total_grad;
@@ -1189,6 +1189,7 @@ class StaticPlacer
         for (int i = 0; i < int(ccells.size()); i++) {
             auto &mc = mcells.at(i);
             auto &cc = ccells.at(i);
+            mc.solver_pos = mc.pos;
             if (dsp_bram && mc.group < 2)
                 continue;
             if (!dsp_bram && mc.group >= 2)
@@ -1212,6 +1213,18 @@ class StaticPlacer
         update_nets(true);
         float post_hpwl = system_hpwl();
         log_info("HPWL after legalise: %f (delta: %f)\n", post_hpwl, post_hpwl - pre_hpwl);
+        if (ctx->verbose) {
+            std::vector<float> disp_by_group(cfg.cell_groups.size());
+            for (int i = 0; i < int(ccells.size()); i++) {
+                auto &mc = mcells.at(i);
+                disp_by_group.at(mc.group) +=
+                        std::sqrt(std::pow(mc.pos.x - mc.solver_pos.x, 2) + std::pow(mc.pos.y - mc.solver_pos.y, 2));
+            }
+            log_info(" displacement by group: \n");
+            for (int i = 0; i < int(cfg.cell_groups.size()); i++) {
+                log_info("    %s %.0f\n", cfg.cell_groups.at(i).name.c_str(ctx), disp_by_group.at(i));
+            }
+        }
     }
 
     void enqueue_legalise(int cell_idx)
