@@ -1203,6 +1203,13 @@ class StaticPlacer
         update_chains();
         update_gradients(true);
         update_potentials();
+        if (ctx->verbose) {
+            std::string pot_str = "";
+            for (auto &g : groups) {
+                pot_str += stringf("%s%.0f", pot_str.empty() ? "" : ", ", g.curr_potential);
+            }
+            log_info("    potentials: [%s]\n", pot_str.c_str());
+        }
         log_info("   system potential: %f hpwl: %f\n", system_potential(), system_hpwl());
         compute_overlap();
         if ((iter % 10) == 0)
@@ -1558,7 +1565,7 @@ class StaticPlacer
         prepare_cells();
         init_cells();
         init_nets();
-        insert_dark();
+        // insert_dark();
         insert_spacer();
 
         prepare_density_bins();
