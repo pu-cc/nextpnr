@@ -973,7 +973,7 @@ class StaticPlacer
                 wirelen_sum += std::abs(mc.ref_wl_grad.x) + std::abs(mc.ref_wl_grad.y);
                 force_sum += std::abs(mc.ref_dens_grad.x) + std::abs(mc.ref_dens_grad.y);
             }
-            const float eta = 1e-1;
+            const float eta = 1e-3;
             float init_dens_penalty = eta * (wirelen_sum / force_sum);
             NPNR_ASSERT(std::isfinite(init_dens_penalty));
             log_info("initial density penalty: %f\n", init_dens_penalty);
@@ -1090,7 +1090,7 @@ class StaticPlacer
         for (int g = 0; g < int(groups.size()); g++) {
             if (!groups.at(g).enabled)
                 continue;
-            float next_penalty = dens_penalty.at(g) + (penalty_incr * (rel_pot.at(g) / pot_norm));
+            float next_penalty = dens_penalty.at(g) * (1 + (penalty_incr * (rel_pot.at(g) / pot_norm)));
             dens_penalty.at(g) = next_penalty;
         }
     }
@@ -1146,7 +1146,7 @@ class StaticPlacer
     {
         // Move the post-solve position of a chain towards be the weighted average of its constituents
         // The strength increases with iterations
-        float alpha = std::min<float>(std::pow(1.002f, iter) - 1, 1.0f);
+        float alpha = std::min<float>(std::pow(1.0005f, iter) - 1, 1.0f);
         float dist = 0;
         for (int i = 0; i < int(macros.size()); i++) {
             auto &macro = macros.at(i);
