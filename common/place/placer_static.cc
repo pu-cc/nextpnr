@@ -594,7 +594,6 @@ class StaticPlacer
     {
         log_info("⌁ inserting spacers...\n");
 
-        int inserted_spacers = 0;
         for (int group = 0; group < int(groups.size()); group++) {
             const auto &cg = cfg.cell_groups.at(group);
             const auto &g = groups.at(group);
@@ -602,6 +601,7 @@ class StaticPlacer
             log_info("⌁   group %s pre-spacer utilisation %.02f%% (target %.02f%%)\n", ctx->nameOf(cg.name),
                      (util * 100.0), (target_util * 100.0));
             // TODO: better computation of spacer size and placement?
+            int inserted_spacers = 0;
             int spacer_count = (g.total_area * target_util - g.concrete_area) / cg.spacer_rect.area();
             if (spacer_count <= 0)
                 continue;
@@ -614,8 +614,8 @@ class StaticPlacer
                 add_cell(cg.spacer_rect, group, RealPair(x + ctx->rngf(1.0), y + ctx->rngf(1.0)), nullptr /*spacer*/);
                 ++inserted_spacers;
             }
+            log_info("⌁   group %s inserted a total of %d spacers\n", ctx->nameOf(cg.name), inserted_spacers);
         }
-        log_info("⌁   inserted a total of %d spacers\n", inserted_spacers);
     }
 
     // TODO: dark node insertion when we have obstructions or non-rectangular placement regions
