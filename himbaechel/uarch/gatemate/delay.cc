@@ -65,8 +65,8 @@ void GateMateImpl::get_setuphold_from_tmg_db(IdString id_setup, IdString id_hold
 {
     auto fnd = timing.find(id_setup);
     if (fnd != timing.end()) {
-        setup.min_delay = fnd->second->delay.fast_min;
-        setup.max_delay = fnd->second->delay.fast_max;
+        setup.min_delay = fnd->second->delay.slow_min;
+        setup.max_delay = fnd->second->delay.slow_max;
     }
     fnd = timing.find(id_hold);
     if (fnd != timing.end()) {
@@ -79,10 +79,10 @@ void GateMateImpl::get_setuphold_from_tmg_db(IdString id_setuphold, DelayPair &s
 {
     auto fnd = timing.find(id_setuphold);
     if (fnd != timing.end()) {
-        setup.min_delay = fnd->second->delay.fast_min;
-        setup.max_delay = fnd->second->delay.fast_max;
-        hold.min_delay = fnd->second->delay.slow_min;
-        hold.max_delay = fnd->second->delay.slow_max;
+        setup.min_delay = fnd->second->delay.slow_min;
+        setup.max_delay = fnd->second->delay.slow_max;
+        hold.min_delay = fnd->second->delay.fast_min;
+        hold.max_delay = fnd->second->delay.fast_max;
     }
 }
 
